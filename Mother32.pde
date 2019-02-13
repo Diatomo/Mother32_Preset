@@ -36,7 +36,7 @@ void mouseDragged(){
 
 
 //===========================================
-//UTILITY CLASSES 
+//UTILITY 
 class BoundingBox{
   
   float right,left,bot,top;
@@ -67,47 +67,6 @@ class BoundingBox{
 
 }
 
-class Chrono{
-
-  private boolean active;
-  private float alarm, counter;
-  Chrono(){
-    active = false;
-    alarm = 0;
-    counter = 0;
-  }
-
-  public boolean isSet(){
-    return active; 
-  }
-
-  public void setAlarm(float time){
-    if (!this.active){
-      alarm = time;
-      counter = millis();
-      active = true;
-    }
-  }
-
-  public boolean poll(){
-    boolean trigger = false;
-    if (this.active){
-      float currTime = millis();
-      if (currTime - counter > alarm){
-        trigger = true;
-        this.resetClk();
-      }
-    }
-    return trigger;
-  }
-
-  private void resetClk(){
-    active = false;
-    alarm = 0;
-    counter = 0;
-  }
-}
-
 //===========================================
 /*
  *
@@ -125,7 +84,6 @@ class Switch{
   float alarmTime;
   boolean animation, isSet;
   BoundingBox bb;
-  Chrono alarm;
   //constructor
   Switch(float x,float y){
     //defaults
@@ -134,7 +92,6 @@ class Switch{
     state = false;//sprite toggle {up || down}
     //objects
     bb = new BoundingBox(x,y,w,h);
-    alarm = new Chrono();
     //attributes
     img = swDown;
     posX = x;
@@ -221,7 +178,20 @@ class Knob{
 //===========================================
 
 //===========================================
+class Patch{
+  
+  float posX, posY;
+  float radius;
+  Patch(float x, float y){
+    radius = 5;
+  }
 
+  public void render(){
+    fill(255);
+    ellipse(this.posX, this.posY, this.radius, this.radius);
+  }
+
+}
 
 
 //===========================================
@@ -231,10 +201,13 @@ class Knob{
 //===========================================
 class Mother{
 
-  ArrayList<Switch> switches = new ArrayList<Switch>();
-  ArrayList<Knob> knobs = new ArrayList<Knob>();
-  Switch vcoWave, vcoModSrc, vcoModDest, vcfMode, vcfModSrc, polarity, vcaMode, lfoWave, sustain;
-  Knob frequency, pulseWidth, mix, cutoff, resonance, volume, glide, vcoMod, vcfMod, tempo, lfoRate, attack, decay, vcMix;
+  private int numSwitches = 9;
+  private int numKnobs = 14;
+  private int numPatchesX = 4;
+  private int numPatchesY = 8;
+  private Switch[] switches = new Switch[numSwitches];
+  private Knob[] knobs = new Knob[numKnobs];
+  private Patch[] patches = new Patch[numPatchesX * numPatchesY];
   Switch activeSwtch;
   Knob activeKnob;
 
@@ -245,78 +218,34 @@ class Mother{
   }
 
   void init(){
-
-    int numSwitches = 9;
-    int numKnob = 14;
+    
+    //hardcoded coordinates.
     float[] switchX = {242,879,242,487,606,727,970,485,720};
     float[] switchY = {87,87,208,208,208,208,208,329,329};
     float[] knobX = {120,363,483,629,775,970,120,363,848,199,364,606,849,970};
     float[] knobY = {85,85,85,85,85,85,205,205,205,327,328,327,325,326};
+    float sPatchX = 1081;
+    float sPatchY = 78;
+    float patchSpace = 58;
     
 
     for (int i = 0; i < numSwitches; i++){
-      Switch temp = new Switch(switchX[i], switchY[i]);
-      this.switches.add(temp);  
+      this.switches[i] = new Switch(switchX[i], switchY[i]); 
     }
 
-    /*
-    //switches row 1 :: hardcoded coordinates
-    this.vcoWave = new Switch(242, 87);
-    this.vcaMode = new Switch(879, 87);
-    //switches row 2 :: hardcoded coordinates
-    this.vcoModSrc = new Switch(242, 208);
-    this.vcoModDest = new Switch(487, 208);
-    this.vcfMode = new Switch(606, 208);
-    this.vcfModSrc = new Switch(727, 208);
-    this.polarity = new Switch(970, 208);
-    //switches row 3 :: hardcoded coordinates
-    this.lfoWave = new Switch(485, 329);
-    this.sustain = new Switch(728, 328);
-    
-    //knob row 1 :: hardcoded coordinates
-    this.frequency = new Knob(120, 85);
-    this.pulseWidth = new Knob(363, 85);
-    this.mix = new Knob(483, 85);
-    this.cutoff = new Knob(629, 85);
-    this.resonance = new Knob(775, 85);
-    this.volume = new Knob(970, 85);
-    //knob row 2 :: hardcoded coordinates
-    this.glide = new Knob(120, 205);
-    this.vcoMod = new Knob(363, 205);
-    this.vcfMod = new Knob(848, 205);
-    //knob row 3 :: hardcoded coordinates
-    this.tempo = new Knob(199, 327);
-    this.lfoRate = new Knob(364, 328);
-    this.attack = new Knob(606, 327);
-    this.decay = new Knob(849, 325);
-    this.vcMix = new Knob(970, 326);
-    */
+    for (int i = 0; i < numKnobs; i++){
+      this.knobs[i] = new Knob(knobX[i], knobY[i]);
+    }
+  
+    for (int i = 0; i < numPatchesY; i++){
+      for (int j = 0; j < numPatchesX; j++){
+        patches[i * numPatchesX + j] = new Patch(sPatchX, sPatchY);
+        sPatchX += patchSpace;
+      }
+      sPatchX = 1081;
+      sPatchY += patchSpace;
+    }
 
-    //switches
-    this.switches.add(this.vcoWave);
-    this.switches.add(this.vcaMode);
-    this.switches.add(this.vcoModSrc);
-    this.switches.add(this.vcoModDest);
-    this.switches.add(this.vcfMode);
-    this.switches.add(this.vcfModSrc); 
-    this.switches.add(this.polarity);
-    this.switches.add(this.lfoWave);
-    this.switches.add(this.sustain);
-    //knobs
-    this.knobs.add(this.frequency);
-    this.knobs.add(this.pulseWidth);
-    this.knobs.add(this.mix);
-    this.knobs.add(this.cutoff);
-    this.knobs.add(this.resonance);
-    this.knobs.add(this.volume);
-    this.knobs.add(this.glide);
-    this.knobs.add(this.vcoMod);
-    this.knobs.add(this.vcfMod);
-    this.knobs.add(this.tempo);
-    this.knobs.add(this.lfoRate);
-    this.knobs.add(this.attack);
-    this.knobs.add(this.decay);
-    this.knobs.add(this.vcMix);
   }
 
   private void updateSwitch(){
@@ -350,9 +279,16 @@ class Mother{
     }
   }
 
+  private void updatePatch(){
+    for (Patch patch : patches){
+      patch.render();
+    }
+  }
+
   void update(){
     updateSwitch();
     updateKnob();
+    updatePatch();
   }
 }
 //===========================================
@@ -364,8 +300,6 @@ void draw(){
   ellipse(200,200,100,100);
   image(overlay,0,0);
   mother.update();
-  println("mouseX :: " + mouseX);
-  println("mouseY :: " + mouseY);
 }
 
 
