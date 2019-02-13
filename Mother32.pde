@@ -17,7 +17,13 @@ void setup(){
   mother.init();
 }
 
-
+/*
+ *
+ *  FxN :: mouseReleased
+ *
+ *  Resets active object
+ *  upon mouse release
+ */
 void mouseReleased(){
   if (mother.activeSwtch != null){
     mother.activeSwtch = null;
@@ -27,6 +33,14 @@ void mouseReleased(){
   }
 }
 
+/*
+ *
+ *  FxN :: mouseDragged
+ *
+ *  While mouse is being dragged it will
+ *  turn the dial on the knobs.
+ *
+ */
 void mouseDragged(){
   if (mother.activeKnob != null){
     mother.activeKnob.turn();
@@ -37,6 +51,14 @@ void mouseDragged(){
 
 //===========================================
 //UTILITY 
+/*
+ *
+ *  class :: BoundingBox
+ *
+ *  Illustrated bounding boxes that collide
+ *  with the mouse clicks.
+ *
+ */
 class BoundingBox{
   
   float right,left,bot,top;
@@ -55,16 +77,13 @@ class BoundingBox{
   }
 
   public boolean collision(float cursorX, float cursorY){
-    boolean collide = false;
-    
+    boolean collide = false; 
     if (cursorX < this.right && cursorX > this.left && 
         cursorY > this.top && cursorY < this.bot){
         collide = true;
     }
-   
     return collide;
   }
-
 }
 
 //===========================================
@@ -135,26 +154,41 @@ class Switch{
  */
 class Knob{
 
-  float posX, posY;
-  float radius;
-  float angle;
-  float currMouse, prevMouse;
+  float posX, posY; //positions
+  float radius; //radius
+  float angle;  //degree of rotation
+  float currMouse, prevMouse; //controller values
   boolean active;
   BoundingBox bb;
   Knob(float x, float y){
     float w = 50; //bounding box width
     float h = 50; //bounding box height
-    angle = 270;//default angle degrees {0,360}
-    radius = 28;//radius length :: hardcoded
+    angle = 270; //default angle degrees {0,360}
+    radius = 28; //radius length :: hardcoded
     bb = new BoundingBox(x,y,w,h);
     posX = x;
     posY = y;
   }
 
+  /*
+   *  fxn :: setMousePos
+   *
+   *  initializes the currMouse value
+   *
+   */
   public void setMousePos(){
     this.currMouse = mouseY;
   }
   
+  /*
+   *  fxn :: turn
+   *
+   *  when the mouse is dragged
+   *  it calls the function to 
+   *  increment or decrement
+   *  an angle value
+   *
+   */
   public void turn(){
     float incr = 5;
     this.setMousePos();
@@ -169,6 +203,12 @@ class Knob{
     }
   }
 
+  /*
+   *  fxn :: render
+   *
+   *  renders the line
+   *    
+   */
   public void render(){
     float posXrot = this.posX + cos(radians(this.angle)) * this.radius;
     float posYrot = this.posY + sin(radians(this.angle)) * this.radius;
@@ -178,14 +218,34 @@ class Knob{
 //===========================================
 
 //===========================================
+/*
+ *
+ *  class : Patch
+ *
+ *  
+ *
+ */
 class Patch{
   
   float posX, posY;
   float radius;
+  BoundingBox bb;
   Patch(float x, float y){
+    float w = 17;
+    float h = 17;
+    bb = new BoundingBox(x,y,w,h);
+    posX = x;
+    posY = y;
     radius = 5;
   }
 
+  /*
+   *  fxn :: render
+   *
+   *  renders the vertex 
+   *  or snapping point
+   *    
+   */
   public void render(){
     fill(255);
     ellipse(this.posX, this.posY, this.radius, this.radius);
@@ -224,9 +284,9 @@ class Mother{
     float[] switchY = {87,87,208,208,208,208,208,329,329};
     float[] knobX = {120,363,483,629,775,970,120,363,848,199,364,606,849,970};
     float[] knobY = {85,85,85,85,85,85,205,205,205,327,328,327,325,326};
-    float sPatchX = 1081;
-    float sPatchY = 78;
-    float patchSpace = 58;
+    float sPatchX = 1082;
+    float sPatchY = 77;
+    float patchSpace = 57;
     
 
     for (int i = 0; i < numSwitches; i++){
@@ -242,7 +302,7 @@ class Mother{
         patches[i * numPatchesX + j] = new Patch(sPatchX, sPatchY);
         sPatchX += patchSpace;
       }
-      sPatchX = 1081;
+      sPatchX = 1082;
       sPatchY += patchSpace;
     }
 
@@ -282,6 +342,7 @@ class Mother{
   private void updatePatch(){
     for (Patch patch : patches){
       patch.render();
+      patch.bb.renderCollide();
     }
   }
 
