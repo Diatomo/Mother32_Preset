@@ -3,20 +3,35 @@
 PImage overlay;
 PImage swUp;
 PImage swDown;
+ArrayList<Mother> brood;
 Mother mother;
 
+
 void setup(){
-  size(1312,559);//dimension of image
+  size(1600,800);//dimension of image
   frameRate(120);
   //assets
   overlay = loadImage("overlay.png");
   swUp = loadImage("switch_up.png");
   swDown = loadImage("switch_down.png");
   //main object
-  mother = new Mother();
+  brood = new ArrayList<Mother>();
+  mother = new Mother(100,100);
   mother.init();
+  mother.resize(0.5);
+  resizeImages(0.5);
+  mother.reposition();
+  brood.add(mother);
+
 }
 
+
+void resizeImages(float factor){
+    overlay.resize(int(overlay.width * factor), int(overlay.height * factor));
+    swUp.resize(int(swUp.width * factor), int(swUp.height * factor));
+    swDown.resize(int(swDown.width * factor), int(swDown.height * factor));
+
+}
 /*
  *
  *  FxN :: mouseReleased
@@ -31,8 +46,10 @@ void mouseReleased(){
     for (Patch patch : mother.patches){
       if (patch.bb.collision(mouseX, mouseY)){
         if (patch != mother.activePatch){
-          patch.hookUp(mother.activePatch);
-          mother.activePatch.hookUp(patch);
+          if (patch.node == null && mother.activePatch.node == null){
+            patch.hookUp(mother.activePatch);
+            mother.activePatch.hookUp(patch);
+          }
         }
       }
     }
@@ -83,6 +100,13 @@ class BoundingBox{
     line(this.left, this.bot, this.left, this.top); // left side
     line(this.left, this.bot, this.right, this.bot); //bottom side;
   }
+  
+  public void resize(float x, float y, float w, float h){
+    this.right = x + w;
+    this.left = x - w;
+    this.bot = y + h;
+    this.top = y - h;
+  }
 
   public boolean collision(float cursorX, float cursorY){
     boolean collide = false; 
@@ -107,15 +131,15 @@ class Switch{
   //attributes
   PImage img;
   boolean state;
-  float posX, posY;
+  float posX, posY, w, h;
   float alarmTime;
   boolean animation, isSet;
   BoundingBox bb;
   //constructor
   Switch(float x,float y){
     //defaults
-    float w = 25;//bounding box width
-    float h = 25;//bounding box height
+    w = 25;//bounding box width
+    h = 25;//bounding box height
     state = false;//sprite toggle {up || down}
     //objects
     bb = new BoundingBox(x,y,w,h);
@@ -140,6 +164,14 @@ class Switch{
       }
     }
 
+  public void resize(float factor){
+    this.posX = this.posX * factor;
+    this.posY = this.posY * factor;
+    this.w = this.w * factor;
+    this.h = this.h * factor;
+    this.bb = new BoundingBox(this.posX, this.posY, this.w, this.h);
+  }
+
   /*
    *  fxn :: render
    *    renders the image
@@ -162,15 +194,15 @@ class Switch{
  */
 class Knob{
 
-  float posX, posY; //positions
+  float posX, posY, w, h; //positions
   float radius; //radius
   float angle;  //degree of rotation
   float currMouse, prevMouse; //controller values
   boolean active;
   BoundingBox bb;
   Knob(float x, float y){
-    float w = 50; //bounding box width
-    float h = 50; //bounding box height
+    w = 50; //bounding box width
+    h = 50; //bounding box height
     angle = 270; //default angle degrees {0,360}
     radius = 28; //radius length :: hardcoded
     bb = new BoundingBox(x,y,w,h);
@@ -211,6 +243,14 @@ class Knob{
     }
   }
 
+  public void resize(float factor){
+    this.posX = this.posX * factor;
+    this.posY = this.posY * factor;
+    this.w = this.w * factor;
+    this.h = this.h * factor;
+    this.radius = this.radius * factor;
+    this.bb.resize(this.posX, this.posY, this.w, this.h);
+  }
   /*
    *  fxn :: render
    *
@@ -235,15 +275,15 @@ class Knob{
  */
 class Patch{
   
-  float posX, posY, sX, sY;
+  float posX, posY, w, h;
   float radius;
   BoundingBox bb;
   boolean snapped;
   boolean snapping;
   Patch node;
   Patch(float x, float y){
-    float w = 17;
-    float h = 17;
+    w = 17;
+    h = 17;
     bb = new BoundingBox(x,y,w,h);
     snapped = false;
     posX = x;
@@ -259,6 +299,18 @@ class Patch{
     this.node = node;
   }
 
+  public void breakUp(){
+    node = null;
+  }
+
+  public void resize(float factor){
+    this.posX = this.posX * factor;
+    this.posY = this.posY * factor;
+    this.w = this.w * factor;
+    this.h = this.h * factor;
+    this.radius = this.radius * factor;
+    this.bb.resize(this.posX, this.posY, this.w, this.h);
+  }
   /*
    *  fxn :: render
    *
@@ -268,9 +320,11 @@ class Patch{
    */
   public void render(){
     fill(255);
-    ellipse(this.posX, this.posY, this.radius, this.radius);
+    //ellipse(this.posX, this.posY, this.radius, this.radius);
     if(this.node != null){
+      strokeWeight(5);
       line(this.posX, this.posY, this.node.posX, this.node.posY);
+      strokeWeight(2);
     }
   }
 }
@@ -287,47 +341,99 @@ class Mother{
   private int numKnobs = 14;
   private int numPatchesX = 4;
   private int numPatchesY = 8;
+  float[] switchX = {242,879,242,487,606,727,970,485,720};
+  float[] switchY = {87,87,208,208,208,208,208,329,329};
+  float[] knobX = {120,363,483,629,775,970,120,363,848,199,364,606,849,970};
+  float[] knobY = {85,85,85,85,85,85,205,205,205,327,328,327,325,326};
+  float sPatchX = 1082;
+  float sPatchY = 77;
+  float patchSpace = 57;
   private Switch[] switches = new Switch[numSwitches];
   private Knob[] knobs = new Knob[numKnobs];
   private Patch[] patches = new Patch[numPatchesX * numPatchesY];
+  private PImage synth;
+  private float posX, posY;
   Switch activeSwtch;
   Knob activeKnob;
   Patch activePatch;
 
   //constructor
-  Mother(){
+  Mother(float x, float y){
     activeSwtch = null;
     activeKnob = null;
+    posX = x;
+    posY = y;
+    synth = overlay;
   }
 
   void init(){
-    
-    //hardcoded coordinates.
-    float[] switchX = {242,879,242,487,606,727,970,485,720};
-    float[] switchY = {87,87,208,208,208,208,208,329,329};
-    float[] knobX = {120,363,483,629,775,970,120,363,848,199,364,606,849,970};
-    float[] knobY = {85,85,85,85,85,85,205,205,205,327,328,327,325,326};
-    float sPatchX = 1082;
-    float sPatchY = 77;
-    float patchSpace = 57;
-    
-
+   
     for (int i = 0; i < numSwitches; i++){
-      this.switches[i] = new Switch(switchX[i], switchY[i]); 
+      this.switches[i] = new Switch(switchX[i] + this.posX, switchY[i] + this.posY); 
     }
 
     for (int i = 0; i < numKnobs; i++){
-      this.knobs[i] = new Knob(knobX[i], knobY[i]);
+      this.knobs[i] = new Knob(knobX[i] + this.posX, knobY[i] + this.posY);
     }
-  
+
+    float tempX = this.sPatchX;
+    float tempY = this.sPatchY;
     for (int i = 0; i < numPatchesY; i++){
       for (int j = 0; j < numPatchesX; j++){
-        patches[i * numPatchesX + j] = new Patch(sPatchX, sPatchY);
-        sPatchX += patchSpace;
+        patches[i * numPatchesX + j] = new Patch(tempX + this.posX, tempY + this.posY);
+        tempX += patchSpace;
       }
-      sPatchX = 1082;
-      sPatchY += patchSpace;
+      tempX = sPatchX;
+      tempY += patchSpace;
     }
+  }
+
+  void resize(float factor){
+
+    for (int i = 0; i < numSwitches; i++){
+      switchX[i] = switchX[i] * factor;
+      switchY[i] = switchY[i] * factor;
+      switches[i].resize(factor);
+    }
+
+    for (int i = 0; i < numKnobs; i++){
+      knobX[i] = knobX[i] * factor;
+      knobY[i] = knobY[i] * factor;
+      knobs[i].resize(factor);
+    }
+
+    sPatchX = sPatchX * factor;
+    sPatchY = sPatchY * factor;
+    patchSpace = patchSpace * factor;
+    for (int i = 0; i < numPatchesX * numPatchesY; i++){
+      patches[i].resize(factor);
+    }
+  }
+
+
+  void reposition(){
+    for (int i = 0; i < numSwitches; i++){
+      this.switches[i].posX = switchX[i] + this.posX; 
+      this.switches[i].posY = switchY[i] + this.posY; 
+    }
+
+    for (int i = 0; i < numKnobs; i++){
+      this.knobs[i].posX = knobX[i] + this.posX;
+      this.knobs[i].posY = knobY[i] + this.posY;
+    }
+
+    float tempX = this.sPatchX;
+    float tempY = this.sPatchY;
+    for (int i = 0; i < numPatchesY; i++){
+      for (int j = 0; j < numPatchesX; j++){
+        patches[i * numPatchesX + j].posX = tempX + this.posX;
+        patches[i * numPatchesX + j].posY = tempY + this.posY;
+        tempX += patchSpace;
+      }
+      tempX = sPatchX;
+      tempY += patchSpace;
+    }
+
 
   }
 
@@ -373,8 +479,9 @@ class Mother{
         if(patch.bb.collision(mouseX, mouseY)){
           if(this.activePatch == null){
             this.activePatch = patch;
-            if (this.activePatch.snapped){
-              this.activePatch.snapped = false;
+            if (this.activePatch.node != null){
+              this.activePatch.node.breakUp();
+              this.activePatch.breakUp();
             }
           }
         }
@@ -382,21 +489,26 @@ class Mother{
     }
   }
 
-  void update(){
+  public void update(){
     updateSwitch();
     updateKnob();
     updatePatch();
   }
+
+  public void render(){
+    image(overlay,this.posX,this.posY);
+  }
+
+
 }
 //===========================================
 
 void draw(){
   background(255,255,255);
-  stroke(1);
-  strokeWeight(2);
-  ellipse(200,200,100,100);
-  image(overlay,0,0);
-  mother.update();
+  for (Mother mother : brood){
+    mother.render();
+    mother.update();
+  }
 }
 
 
