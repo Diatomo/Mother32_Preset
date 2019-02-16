@@ -25,11 +25,18 @@ void setup(){
  *  upon mouse release
  */
 void mouseReleased(){
-  if (mother.activeSwtch != null){
-    mother.activeSwtch = null;
-  }
-  if (mother.activeKnob != null){
-    mother.activeKnob = null;
+  mother.activeSwtch = null;
+  mother.activeKnob = null;
+  if (mother.activePatch != null){
+    for (Patch patch : mother.patches){
+      if (patch.bb.collision(mouseX, mouseY)){
+        if (patch != mother.activePatch){
+          patch.hookUp(mother.activePatch);
+          mother.activePatch.hookUp(patch);
+        }
+      }
+    }
+    mother.activePatch = null;
   }
 }
 
@@ -44,10 +51,11 @@ void mouseReleased(){
 void mouseDragged(){
   if (mother.activeKnob != null){
     mother.activeKnob.turn();
-  } 
+  }
+  if (mother.activePatch != null){
+    mother.activePatch.hookingUp(); 
+  }
 }
-
-
 
 //===========================================
 //UTILITY 
@@ -227,16 +235,28 @@ class Knob{
  */
 class Patch{
   
-  float posX, posY;
+  float posX, posY, sX, sY;
   float radius;
   BoundingBox bb;
+  boolean snapped;
+  boolean snapping;
+  Patch node;
   Patch(float x, float y){
     float w = 17;
     float h = 17;
     bb = new BoundingBox(x,y,w,h);
+    snapped = false;
     posX = x;
     posY = y;
     radius = 5;
+  }
+
+  public void hookingUp(){
+    line(this.posX, this.posY, mouseX, mouseY);
+  }
+
+  public void hookUp(Patch node){
+    this.node = node;
   }
 
   /*
@@ -249,8 +269,10 @@ class Patch{
   public void render(){
     fill(255);
     ellipse(this.posX, this.posY, this.radius, this.radius);
+    if(this.node != null){
+      line(this.posX, this.posY, this.node.posX, this.node.posY);
+    }
   }
-
 }
 
 
@@ -270,6 +292,7 @@ class Mother{
   private Patch[] patches = new Patch[numPatchesX * numPatchesY];
   Switch activeSwtch;
   Knob activeKnob;
+  Patch activePatch;
 
   //constructor
   Mother(){
@@ -343,6 +366,19 @@ class Mother{
     for (Patch patch : patches){
       patch.render();
       patch.bb.renderCollide();
+      if (patch == this.activePatch){
+        patch.hookingUp();
+      }
+      if (mousePressed){
+        if(patch.bb.collision(mouseX, mouseY)){
+          if(this.activePatch == null){
+            this.activePatch = patch;
+            if (this.activePatch.snapped){
+              this.activePatch.snapped = false;
+            }
+          }
+        }
+      }
     }
   }
 
@@ -362,9 +398,6 @@ void draw(){
   image(overlay,0,0);
   mother.update();
 }
-
-
-
 
 
 
