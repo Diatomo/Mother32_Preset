@@ -40,20 +40,22 @@ void resizeImages(float factor){
  *  upon mouse release
  */
 void mouseReleased(){
-  mother.activeSwtch = null;
-  mother.activeKnob = null;
-  if (mother.activePatch != null){
-    for (Patch patch : mother.patches){
-      if (patch.bb.collision(mouseX, mouseY)){
-        if (patch != mother.activePatch){
-          if (patch.node == null && mother.activePatch.node == null){
-            patch.hookUp(mother.activePatch);
-            mother.activePatch.hookUp(patch);
+  for (Mother mother : scene.brood){
+    mother.activeSwtch = null;
+    mother.activeKnob = null;
+    if (mother.activePatch != null){
+      for (Patch patch : mother.patches){
+        if (patch.bb.collision(mouseX, mouseY)){
+          if (patch != mother.activePatch){
+            if (patch.node == null && mother.activePatch.node == null){
+              patch.hookUp(mother.activePatch);
+              mother.activePatch.hookUp(patch);
+            }
           }
         }
       }
+      mother.activePatch = null;
     }
-    mother.activePatch = null;
   }
 }
 
@@ -66,11 +68,13 @@ void mouseReleased(){
  *
  */
 void mouseDragged(){
-  if (mother.activeKnob != null){
-    mother.activeKnob.turn();
-  }
-  if (mother.activePatch != null){
-    mother.activePatch.hookingUp(); 
+  for (Mother mother : scene.brood){
+    if (mother.activeKnob != null){
+      mother.activeKnob.turn();
+    }
+    if (mother.activePatch != null){
+      mother.activePatch.hookingUp();
+    }
   }
 }
 
@@ -256,10 +260,10 @@ class Scene{
       if (this.brood.size() == 1){
         this.brood.add(new Mother(100,100));
       }
-      else if (this.mums.size() == 2){
+      else if (this.brood.size() == 2){
         this.brood.add(new Mother(100,100));
       }
-      this.scale(factor)
+      this.scale(factor);
     }
   }
 
@@ -295,6 +299,14 @@ class Scene{
       mother.reposition(); 
     }
   }
+
+  public void render(){
+    for (Mother mother : brood){
+      mother.render();
+      mother.update();
+    }
+  }
+
 }
 
 //===========================================
@@ -715,7 +727,7 @@ class Mother{
     imageMode(CENTER);
     for (Switch swtch : switches){
       swtch.render();
-      swtch.bb.renderCollide();
+      swtch.bb.render();
       if (mousePressed){ //collision handler
         if(swtch.bb.collision(mouseX, mouseY)){
           if (this.activeSwtch == null){
@@ -739,7 +751,7 @@ class Mother{
   private void updateKnob(){
     for (Knob knob : knobs){
       knob.render();
-      knob.bb.renderCollide();
+      knob.bb.render();
       if (mousePressed){ //collision handler
         if(knob.bb.collision(mouseX, mouseY)){
           if (this.activeKnob == null){
@@ -761,7 +773,7 @@ class Mother{
   private void updatePatch(){
     for (Patch patch : patches){
       patch.render();
-      patch.bb.renderCollide();
+      patch.bb.render();
       if (patch == this.activePatch){
         patch.hookingUp();
       }
@@ -804,9 +816,6 @@ class Mother{
   }
 }
 //===========================================
-
-
-
 
 
 /*
