@@ -5,10 +5,12 @@ PImage swDown;
 
 Scene scene;
 
+String patchName = "Example";
 
 void setup(){
-  size(1600,800);//dimension of canvas
+  size(1600,1000);//dimension of canvas
   frameRate(120);
+  textSize(30);
   //assets
   overlay = loadImage("overlay.png");
   swUp = loadImage("switch_up.png");
@@ -151,6 +153,20 @@ void mouseDragged(){
   }
 }
 
+void keyPressed() {
+  if (keyCode == BACKSPACE) {
+    if (patchName.length() > 0) {
+      patchName = patchName.substring(0, patchName.length()-1);
+    }
+  } 
+  else if (keyCode == DELETE) {
+    patchName = "";
+  } 
+  else if (keyCode != SHIFT && keyCode != CONTROL && keyCode != ALT) {
+    patchName = patchName + key;
+  }
+}
+
 //===========================================
 //UTILITY 
 
@@ -200,6 +216,9 @@ class Button{
     this.posY = this.posY * factor;
     this.w = this.w * factor;
     this.h = this.h * factor;
+  }
+
+  public void reposBB(){
     this.bb = new BoundingBox(this.posX,this.posY,this.w,this.h);
   }
 
@@ -231,9 +250,9 @@ class Scene{
   
   //attributes
   ArrayList<Mother> brood; //container for mothes
-  float[] buttX = {1550,1550};
-  float[] buttY = {40, 100};
-  private int numButtons = 2;
+  float[] buttX = {1550,1550,1550};
+  float[] buttY = {40, 100,160};
+  private int numButtons = 3;
   StringList labels = new StringList();
   private Button[] buttons = new Button[numButtons];
   Mother mother1, mother2, mother3; //mother synthesizer
@@ -257,6 +276,7 @@ class Scene{
     this.brood.add(this.mother1);
     this.labels.append("add");
     this.labels.append("remove");
+    this.labels.append("save");
     this.activeButton = null;
   }
 
@@ -275,13 +295,25 @@ class Scene{
    *
    */
   public void add(){
-    float factor = 0.75;
+    float factor = 0.70;
     if (this.brood.size() < 3){    
       if (this.brood.size() == 1){
         this.brood.add(this.mother2);
+        this.mother1.posX = 400;
+        this.mother1.posY = 50;
+        this.mother2.posX = 400;
+        this.mother2.posY = 700;
+        this.mother3.resize(factor);
       }
       else if (this.brood.size() == 2){
         this.brood.add(this.mother3);
+        float posX = 700;
+        this.mother1.posX = posX;
+        this.mother1.posY = 50;
+        this.mother2.posX = posX;
+        this.mother2.posY = 500;
+        this.mother3.posX = posX;
+        this.mother3.posY = 950;
       }
       this.scale(factor);
     }
@@ -294,7 +326,7 @@ class Scene{
    *    then scales
    *
    */
-  public void remove(){
+  private void remove(){
     float factor = 1.25;
     if (this.brood.size() > 1){
       if (this.brood.size() == 3){
@@ -303,8 +335,17 @@ class Scene{
       else if (this.brood.size() == 2){
         this.brood.remove(this.mother2);
       }
-    }
     this.scale(factor);
+    }
+  }
+
+  private void saveImage(){
+    for (Mother mother : brood){
+      mother.update();
+    }
+    String fmt = ".jpg";
+    save(patchName + fmt);
+    //saveFrame(patchName + fmt);
   }
 
   /*
@@ -316,6 +357,8 @@ class Scene{
     resizeImages(factor);
     for (Mother mother : brood){
       mother.resize(factor);
+    }
+    for (Mother mother : brood){
       mother.reposition(); 
     }
   }
@@ -326,15 +369,17 @@ class Scene{
       button.bb.render();
       if (mousePressed){
         if (button.bb.collision(mouseX, mouseY)){
-          this.activeButton = button;
-          if (this.activeButton.label == "add"){
-            this.add();
-          }
-          else if (this.activeButton.label == "remove"){
-            this.remove();
-          }
-          else if (this.activeButton.label == "save"){
-              //TODO add save functionality here 
+          if (this.activeButton == null){
+            this.activeButton = button;
+            if (this.activeButton.label == "add"){
+              this.add();
+            }
+            else if (this.activeButton.label == "remove"){
+              this.remove();
+            }
+            else if (this.activeButton.label == "save"){
+              this.saveImage(); 
+            }
           }
         }
       }
@@ -349,7 +394,7 @@ class Scene{
   }
 
   public void render(){
-    for (Button button : this.buttons){
+    for (Button button : buttons){
       button.render();
     }
     for (Mother mother : brood){
@@ -418,6 +463,9 @@ class Switch{
     this.bb = new BoundingBox(this.posX, this.posY, this.w, this.h);
   }
 
+  public void reposBB(){
+    this.bb = new BoundingBox(this.posX,this.posY,this.w,this.h);
+  }
   /*
    *  fxn :: render
    *    renders the image
@@ -503,6 +551,9 @@ class Knob{
     this.bb.resize(this.posX, this.posY, this.w, this.h);
   }
 
+  public void reposBB(){
+    this.bb = new BoundingBox(this.posX,this.posY,this.w,this.h);
+  }
   /*
    *  fxn :: render
    *
@@ -599,6 +650,9 @@ class Patch{
     this.bb.resize(this.posX, this.posY, this.w, this.h);
   }
 
+  public void reposBB(){
+    this.bb = new BoundingBox(this.posX,this.posY,this.w,this.h);
+  }
   /*
    *  fxn :: render
    *
@@ -739,13 +793,15 @@ class Mother{
     //reposition switches
     for (int i = 0; i < numSwitches; i++){
       this.switches[i].posX = switchX[i] + this.posX; 
-      this.switches[i].posY = switchY[i] + this.posY; 
+      this.switches[i].posY = switchY[i] + this.posY;
+      this.switches[i].reposBB();
     }
 
     //reposition knobs
     for (int i = 0; i < numKnobs; i++){
       this.knobs[i].posX = knobX[i] + this.posX;
       this.knobs[i].posY = knobY[i] + this.posY;
+      this.knobs[i].reposBB();
     }
 
     //reposition patches
@@ -755,6 +811,7 @@ class Mother{
       for (int j = 0; j < numPatchesX; j++){
         patches[i * numPatchesX + j].posX = tempX + this.posX;
         patches[i * numPatchesX + j].posY = tempY + this.posY;
+        patches[i * numPatchesX + j].reposBB();
         tempX += patchSpace;
       }
       tempX = sPatchX;
@@ -877,6 +934,8 @@ void draw(){
   background(255,255,255);
   strokeWeight(2);
   fill(0);
+  text("Patch Name:",0,0,width,height);
+  text(patchName,185,0, width, height);
   scene.render();
   scene.update();
 }
