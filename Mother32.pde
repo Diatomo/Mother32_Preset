@@ -3,6 +3,7 @@ PImage overlay;
 PImage swUp;
 PImage swDown;
 
+<<<<<<< HEAD
 PImage t1overlay;
 PImage t1swUp;
 PImage t1swDown;
@@ -15,6 +16,8 @@ PImage t3overlay;
 PImage t3swUp;
 PImage t3swDown;
 
+=======
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
 Scene scene;
 
 String patchName = "Example";
@@ -23,7 +26,10 @@ void setup(){
   size(1600,1000);//dimension of canvas
   frameRate(120);
   textSize(30);
+<<<<<<< HEAD
   float factor = 0.70;
+=======
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
   //assets
   overlay = loadImage("overlay.png");
   swUp = loadImage("switch_up.png");
@@ -129,6 +135,22 @@ class BoundingBox{
     line(this.left, this.bot, this.left, this.top); // left side
     line(this.left, this.bot, this.right, this.bot); //bottom side;
   }
+<<<<<<< HEAD
+=======
+}
+/*
+ *
+ *  FxN :: resizeImages
+ *    @param factor :: multiplicative factor
+ *
+ *  resizes the images (mother32, switch up, switch down);
+ *
+ */
+void resizeImages(float factor){
+    overlay.resize(int(overlay.width * factor), int(overlay.height * factor));
+    swUp.resize(int(swUp.width * factor), int(swUp.height * factor));
+    swDown.resize(int(swDown.width * factor), int(swDown.height * factor));
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
 }
 
 /*
@@ -144,6 +166,7 @@ void mouseReleased(){
     mother.activeSwtch = null;
     mother.activeKnob = null;
     if (mother.activePatch != null){
+<<<<<<< HEAD
       for (Mother mum : scene.brood){
         for (Patch patch : mum.patches){
           if (patch.bb.collision(mouseX, mouseY)){
@@ -152,11 +175,23 @@ void mouseReleased(){
                 patch.hookUp(mother.activePatch);
                 mother.activePatch.hookUp(patch);
               }
+=======
+      for (Patch patch : mother.patches){
+        if (patch.bb.collision(mouseX, mouseY)){
+          if (patch != mother.activePatch){
+            if (patch.node == null && mother.activePatch.node == null){
+              patch.hookUp(mother.activePatch);
+              mother.activePatch.hookUp(patch);
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
             }
           }
         }
       }
+<<<<<<< HEAD
     mother.activePatch = null;
+=======
+      mother.activePatch = null;
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
     }
   }
 }
@@ -209,7 +244,10 @@ class Button{
 
   //attributes
   float posX, posY, w, h, gap;
+<<<<<<< HEAD
   boolean animate;
+=======
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
   BoundingBox bb;
   String label;
 
@@ -231,7 +269,10 @@ class Button{
     this.posX = x;
     this.posY = y;
     this.label = label;
+<<<<<<< HEAD
     this.animate = false;
+=======
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
     this.bb = new BoundingBox(x,y,w,h);
   }
 
@@ -251,6 +292,7 @@ class Button{
     this.bb = new BoundingBox(this.posX,this.posY,this.w,this.h);
   }
 
+<<<<<<< HEAD
 
   private void animation(){ 
     float rate = 0.5;
@@ -273,6 +315,8 @@ class Button{
     }
   }
 
+=======
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
   /*
    *
    *  FxN :: render
@@ -285,6 +329,7 @@ class Button{
     rectMode(CENTER);
     rect(this.posX, this.posY, this.w, this.h);
     rectMode(CORNER);
+<<<<<<< HEAD
     animation();
     if (this.label == "add"){
       text(this.label, this.posX - this.gap + 22, this.posY + 10);
@@ -297,6 +342,9 @@ class Button{
     else if (this.label == "save"){
       text(this.label, this.posX - this.gap + 12, this.posY + 10);
     }
+=======
+    text(this.label, this.posX - this.gap, this.posY);
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
   }
 
 }
@@ -329,7 +377,11 @@ class Scene{
    */
   Scene(){
     this.brood = new ArrayList<Mother>();
+<<<<<<< HEAD
     this.mother1 = new Mother(125, 150);
+=======
+    this.mother1 = new Mother(100, 100);
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
     this.mother2 = new Mother(0, 0);
     this.mother3 = new Mother(0, 0);
     this.mother1.init();
@@ -356,6 +408,7 @@ class Scene{
    *    then scales
    *
    */
+<<<<<<< HEAD
   public void removeRepos(){
       if (this.brood.size() == 1){
         this.mother1.posX = 125;
@@ -392,6 +445,21 @@ class Scene{
         this.mother2.posY = 700;
       }
       else if (this.brood.size() == 3){
+=======
+  public void add(){
+    float factor = 0.70;
+    if (this.brood.size() < 3){    
+      if (this.brood.size() == 1){
+        this.brood.add(this.mother2);
+        this.mother1.posX = 400;
+        this.mother1.posY = 50;
+        this.mother2.posX = 400;
+        this.mother2.posY = 700;
+        this.mother3.resize(factor);
+      }
+      else if (this.brood.size() == 2){
+        this.brood.add(this.mother3);
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
         float posX = 700;
         this.mother1.posX = posX;
         this.mother1.posY = 50;
@@ -400,6 +468,7 @@ class Scene{
         this.mother3.posX = posX;
         this.mother3.posY = 950;
       }
+<<<<<<< HEAD
   }
 
 
@@ -408,6 +477,9 @@ class Scene{
       for (Patch patch : mother.patches){
         patch.breakUp();
       }
+=======
+      this.scale(factor);
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
     }
   }
 
@@ -419,6 +491,7 @@ class Scene{
    *
    */
   private void remove(){
+<<<<<<< HEAD
     float factor = 10.0/7.0;
     if (this.brood.size() > 1){
       if (this.brood.size() == 3){
@@ -450,6 +523,18 @@ class Scene{
     this.scale(factor);
   }
   this.unhookPatches();
+=======
+    float factor = 1.25;
+    if (this.brood.size() > 1){
+      if (this.brood.size() == 3){
+        this.brood.remove(this.mother3);
+      }
+      else if (this.brood.size() == 2){
+        this.brood.remove(this.mother2);
+      }
+    this.scale(factor);
+    }
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
   }
 
   private void saveImage(){
@@ -467,6 +552,10 @@ class Scene{
    *    by multiplicative factor
    */
   private void scale(float factor){
+<<<<<<< HEAD
+=======
+    resizeImages(factor);
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
     for (Mother mother : brood){
       mother.resize(factor);
     }
@@ -483,7 +572,10 @@ class Scene{
         if (button.bb.collision(mouseX, mouseY)){
           if (this.activeButton == null){
             this.activeButton = button;
+<<<<<<< HEAD
             this.activeButton.animate = true;
+=======
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
             if (this.activeButton.label == "add"){
               this.add();
             }
@@ -802,9 +894,13 @@ class Patch{
     //ellipse(this.posX, this.posY, this.radius, this.radius);
     if(this.node != null){
       strokeWeight(5);
+<<<<<<< HEAD
       stroke(125, 75);
       line(this.posX, this.posY, this.node.posX, this.node.posY);
       stroke(0,255);
+=======
+      line(this.posX, this.posY, this.node.posX, this.node.posY);
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
       strokeWeight(2);
     }
   }
@@ -1024,6 +1120,7 @@ class Mother{
       }
       if (mousePressed){  //collision handler
         if(patch.bb.collision(mouseX, mouseY)){
+<<<<<<< HEAD
           boolean otherActive = false;
           for (Mother mum : scene.brood){
             if (mum.activePatch != null){
@@ -1037,6 +1134,13 @@ class Mother{
                 this.activePatch.node.breakUp();
                 this.activePatch.breakUp();
               }
+=======
+          if(this.activePatch == null){
+            this.activePatch = patch;
+            if (this.activePatch.node != null){
+              this.activePatch.node.breakUp();
+              this.activePatch.breakUp();
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
             }
           }
         }
@@ -1064,6 +1168,7 @@ class Mother{
    *
    */
   public void render(){
+<<<<<<< HEAD
     if (scene.brood.size() == 1){
       overlay = t1overlay;
     }
@@ -1073,6 +1178,8 @@ class Mother{
     else if (scene.brood.size() == 3){
       overlay = t3overlay;
     }
+=======
+>>>>>>> b2dcd4164f09167135930b975e5dea0f7fd11e25
     image(overlay,this.posX,this.posY);
   }
 }
